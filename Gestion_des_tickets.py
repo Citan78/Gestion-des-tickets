@@ -93,13 +93,14 @@ if uploaded_file is not None:
             # Créer la colonne Date pour le graphique
             df_graph['Date'] = df_graph['Date - Création (Europe/Paris)'].combine_first(df_graph['Date - Clôture (Europe/Paris)'])
             
-            # Remplacer les dates 1970-01-01 ou autres dates invalides
+            # Remplacer les dates invalides ou égales à 1970-01-01
             df_graph['Date'] = df_graph['Date'].apply(
-                lambda x: x if x and x != pd.to_datetime('1970-01-01') else pd.NaT
+                lambda x: x if pd.notna(x) and x != pd.Timestamp(0) else pd.NaT
             )
             
             # Supprimer les lignes avec des dates invalides
             df_graph = df_graph.dropna(subset=['Date'])
+            df_graph = df_graph[df_graph['Date'] != 0 ]
             
             # Afficher les données du graphique pour vérifier
             st.subheader("📊 Données pour le graphique")
