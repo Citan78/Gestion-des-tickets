@@ -78,9 +78,11 @@ if uploaded_file is not None:
             # Calculer les métriques pour le graphique
             ouvertures = df[df['Date - Création (Europe/Paris)'].between(date_debut, date_fin)]
             ouvertures = ouvertures.groupby(ouvertures['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Ouvertures')
+            ouvertures.rename(columns={'Date - Création (Europe/Paris)': 'Date'}, inplace=True)
             
             clotures = df[df['Date - Clôture (Europe/Paris)'].between(date_debut, date_fin)]
             clotures = clotures.groupby(clotures['Date - Clôture (Europe/Paris)'].dt.date).size().reset_index(name='Clotures')
+            clotures.rename(columns={'Date - Clôture (Europe/Paris)': 'Date'}, inplace=True)
 
             # Calcul du backlog
             dates = pd.date_range(start=date_debut, end=date_fin)
@@ -95,6 +97,12 @@ if uploaded_file is not None:
             
             backlog['Backlog'] = backlog['Ouvertures'] - backlog['Clotures']
             backlog = backlog.fillna(0)
+
+            # Afficher les données intermédiaires
+            st.subheader("📊 Données intermédiaires")
+            st.write(ouvertures)
+            st.write(clotures)
+            st.write(backlog)
 
             # Fusion des DataFrames en utilisant la colonne 'Date'
             df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
@@ -154,4 +162,5 @@ if uploaded_file is not None:
     
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
+        st.text(traceback.format_exc())
         st.text(traceback.format_exc())
