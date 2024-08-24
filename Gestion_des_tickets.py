@@ -91,25 +91,32 @@ if uploaded_file is not None:
             backlog = pd.DataFrame(dates, columns=['Date'])
             backlog['Date'] = pd.to_datetime(backlog['Date'])  # Assurez-vous que la colonne Date est en datetime
 
+            # Calculer le backlog en cumulant les ouvertures et les clôtures
             backlog['Ouvertures'] = backlog['Date'].apply(
-                lambda x: len(df[(df['Date - Création (Europe/Paris)'] <= x) & (df['Date - Clôture (Europe/Paris)'].isna() | (df['Date - Clôture (Europe/Paris)'] > x))])
+                lambda x: ouvertures[ouvertures['Date'] <= x]['Ouvertures'].sum()
             )
             backlog['Clotures'] = backlog['Date'].apply(
-                lambda x: len(df[(df['Date - Clôture (Europe/Paris)'] <= x)])
+                lambda x: clotures[clotures['Date'] <= x]['Clotures'].sum()
             )
             
+            # Calcul du backlog comme le nombre total d'ouvertures moins les clôtures
             backlog['Backlog'] = backlog['Ouvertures'] - backlog['Clotures']
-            backlog = backlog.fillna(0)
             
+            # Assurer que toutes les valeurs sont positives
+            backlog['Backlog'] = backlog['Backlog'].clip(lower=0)
+            backlog['Ouvertures'] = backlog['Ouvertures'].clip(lower=0)
+            backlog['Clotures'] = backlog['Clotures'].clip(lower=0)
+
             # Convertir les dates en format YYYY-MM-DD
             ouvertures['Date'] = ouvertures['Date'].dt.date
             clotures['Date'] = clotures['Date'].dt.date
             backlog['Date'] = backlog['Date'].dt.date
 
-            # S'assurer que toutes les valeurs sont positives
-            backlog['Backlog'] = backlog['Backlog'].abs()
-            backlog['Ouvertures'] = backlog['Ouvertures'].abs()
-            backlog['Clotures'] = backlog['Clotures'].abs()
+            # Afficher les données intermédiaires
+            st.subheader("📊 Données intermédiaires")
+            st.write(ouvertures)
+            st.write(clotures)
+            st.write(backlog)
 
             # Fusion des DataFrames en utilisant la colonne 'Date'
             df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
