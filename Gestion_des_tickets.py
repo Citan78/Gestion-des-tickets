@@ -91,7 +91,7 @@ if uploaded_file is not None:
              df['Date - Clôture (Europe/Paris)'].isna()
 
             # Calculer le backlog en combinant les deux conditions comme dans Excel
-            backlog_count = df[condition1 | condition2].shape[0]
+            backlog = df[condition1 | condition2].shape[0]
 
             # Vérifier et fusionner les données pour le graphique sur la colonne Date
             if not ouvertures.empty:
