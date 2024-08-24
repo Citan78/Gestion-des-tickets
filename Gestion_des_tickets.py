@@ -169,8 +169,8 @@ if uploaded_file is not None:
                 'Pourcentage (%)': [100.00]  # La ligne totale a toujours 100%
             })
             
-            # Ajouter la ligne des totaux au tableau
-            tableau_priorite_sla = tableau_priorite_sla.append(total_row, ignore_index=True)
+            # Ajouter la ligne des totaux au tableau en utilisant pd.concat
+            tableau_priorite_sla = pd.concat([tableau_priorite_sla, total_row], ignore_index=True)
             
             # Afficher le tableau des priorités/SLA avec les pourcentages
             st.subheader("📊 Tableau Priorités/SLA")
