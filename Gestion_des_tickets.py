@@ -82,9 +82,16 @@ if uploaded_file is not None:
             clotures = df[df['Date - Clôture (Europe/Paris)'].between(date_debut, date_fin)]
             clotures = clotures.groupby(clotures['Date - Clôture (Europe/Paris)'].dt.date).size().reset_index(name='Clotures')
             
-            backlog = df[((df['Date - Création (Europe/Paris)'] <= date_fin) & 
-                          ((df['Date - Clôture (Europe/Paris)'] > date_fin) | (df['Date - Clôture (Europe/Paris)'].isna())))]
-            backlog = backlog.groupby(backlog['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Backlog')
+            # Première condition : Tickets ouverts avant ou à la date_fin et fermés après date_fin ou pas encore fermés
+            condition1 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
+             ((df['Date - Clôture (Europe/Paris)'] > date_fin) | df['Date - Clôture (Europe/Paris)'].isna())
+
+            # Deuxième condition : Tickets ouverts avant ou à la date_fin et pas encore fermés
+            condition2 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
+             df['Date - Clôture (Europe/Paris)'].isna()
+
+            # Calculer le backlog en combinant les deux conditions comme dans Excel
+            backlog_count = df[condition1 | condition2].shape[0]
 
             # Vérifier et fusionner les données pour le graphique sur la colonne Date
             if not ouvertures.empty:
@@ -149,11 +156,6 @@ if uploaded_file is not None:
 
         else:
             st.error("❌ Les colonnes nécessaires ne sont pas toutes présentes dans le fichier CSV.")
-    
-    except Exception as e:
-        st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
-        st.text(traceback.format_exc())
-
     
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
