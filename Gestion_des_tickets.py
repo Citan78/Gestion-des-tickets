@@ -82,17 +82,16 @@ if uploaded_file is not None:
             clotures = df[df['Date - Clôture (Europe/Paris)'].between(date_debut, date_fin)]
             clotures = clotures.groupby(clotures['Date - Clôture (Europe/Paris)'].dt.date).size().reset_index(name='Clotures')
 
-            # Calcul du backlog, en comptant les tickets ouverts avant ou à la date_fin
+            # Conditions de filtrage pour le backlog
             condition1 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
                          ((df['Date - Clôture (Europe/Paris)'] > date_fin) | df['Date - Clôture (Europe/Paris)'].isna())
-
+            
             condition2 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
                          df['Date - Clôture (Europe/Paris)'].isna()
 
             backlog = df[condition1 | condition2]
-            backlog_count = backlog.shape[0]  # Compter le nombre de tickets dans le backlog
 
-            # Ajout de la date pour la cohérence avec le reste du code
+            # Compter les tickets de backlog par date de création
             backlog = backlog.groupby(backlog['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Backlog')
             backlog['Date'] = pd.to_datetime(backlog['Date - Création (Europe/Paris)'], errors='coerce').dt.date
 
@@ -101,6 +100,8 @@ if uploaded_file is not None:
                 ouvertures['Date'] = pd.to_datetime(ouvertures['Date - Création (Europe/Paris)'], errors='coerce').dt.date
             if not clotures.empty:
                 clotures['Date'] = pd.to_datetime(clotures['Date - Clôture (Europe/Paris)'], errors='coerce').dt.date
+            if not backlog.empty:
+                backlog['Date'] = pd.to_datetime(backlog['Date'], errors='coerce').dt.date
 
             # Fusion des DataFrames en utilisant la colonne 'Date'
             df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
@@ -115,7 +116,7 @@ if uploaded_file is not None:
 
             # Ajouter les barres pour Ouvertures et Clôtures
             fig.add_trace(go.Bar(x=df_graph['Date'], y=df_graph['Ouvertures'], name='Ouvertures', marker_color='skyblue'))
-            fig.add_trace(go.Bar(x=df_graph['Date'], y=df_graph['Clotures'], name='Clotures', marker_color='lightgreen'))
+            fig.add_trace(go.Bar(x=df_graph['Date'], y=df_graph['Clotures'], name='Clôtures', marker_color='lightgreen'))
 
             # Ajouter la courbe pour le Backlog
             fig.add_trace(go.Scatter(x=df_graph['Date'], y=df_graph['Backlog'], mode='lines+markers', name='Backlog', line=dict(color='red')))
@@ -161,5 +162,6 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
         st.text(traceback.format_exc())
+
         
         st.text(traceback.format_exc())
