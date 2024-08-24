@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import traceback
 
 # Définir le thème de l'application
 st.set_page_config(page_title="Gestion des Tickets", layout="wide")
@@ -31,21 +32,11 @@ if uploaded_file is not None:
         if all(col in df.columns for col in selected_columns):
             df = df[selected_columns]
             
-            # Convert the date columns to datetime, ensuring all entries are converted
+            # Convertir les colonnes de date en format datetime
             df['Date - Création (Europe/Paris)'] = pd.to_datetime(df['Date - Création (Europe/Paris)'], errors='coerce')
             df['Date - Clôture (Europe/Paris)'] = pd.to_datetime(df['Date - Clôture (Europe/Paris)'], errors='coerce')
 
-            # Ensure that date_debut and date_fin are also datetime objects
-            date_debut = pd.to_datetime(date_debut)
-            date_fin = pd.to_datetime(date_fin)
-
-# Apply filters only if the dates are valid datetime objects
-if date_debut and date_fin:
-    df = df[(df['Date - Création (Europe/Paris)'] >= date_debut) & 
-            (df['Date - Création (Europe/Paris)'] <= date_fin)]
-
-            
-            # Section pour les données
+            # Section pour les filtres
             st.sidebar.header("Filtres")
             
             # Filtres pour l'utilisateur : Type de ticket
@@ -78,7 +69,6 @@ if date_debut and date_fin:
                 df = df[df['Organisation'].isin(organisation_filtre)]
                 
             if date_debut and date_fin:
-                # Convertir les dates de date_debut et date_fin en datetime pour la comparaison
                 date_debut = pd.to_datetime(date_debut)
                 date_fin = pd.to_datetime(date_fin)
                 
