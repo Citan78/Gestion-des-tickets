@@ -153,7 +153,6 @@ if uploaded_file is not None:
             st.plotly_chart(fig)
 
             # Calculer les métriques pour le tableau Priorités/SLA
-            # Calculer les métriques pour le tableau Priorités/SLA
             tableau_priorite_sla = df.groupby(['Priorité', 'SLA - Clôture - Statut']).size().reset_index(name='Nombre de tickets')
             
             # Calculer le total des tickets pour les pourcentages
@@ -164,7 +163,7 @@ if uploaded_file is not None:
             
             # Créer les lignes pour les totaux spécifiques
             total_respectee = tableau_priorite_sla[tableau_priorite_sla['SLA - Clôture - Statut'] == 'Respecté']['Nombre de tickets'].sum()
-            total_non_respectee = tableau_priorite_sla[tableau_priorite_sla['SLA - Clôture - Statut'] == 'Non Respecté']['Nombre de tickets'].sum()
+            total_non_respectee = tableau_priorite_sla[tableau_priorite_sla['SLA - Clôture - Statut'] == 'Non respecté']['Nombre de tickets'].sum()
             
             total_respectee_row = pd.DataFrame({
                 'Priorité': ['Total Respecté'],
