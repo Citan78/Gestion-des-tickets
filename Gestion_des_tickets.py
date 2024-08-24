@@ -86,22 +86,18 @@ if uploaded_file is not None:
                           ((df['Date - Clôture (Europe/Paris)'] > date_fin) | (df['Date - Clôture (Europe/Paris)'].isna())))]
             backlog = backlog.groupby(backlog['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Backlog')
 
-            # Fusionner les données pour le graphique sur la colonne Date
-            df_graph = pd.merge(ouvertures, clotures, left_on='Date - Création (Europe/Paris)', right_on='Date - Clôture (Europe/Paris)', how='outer', suffixes=('_Ouvertures', '_Clotures')).fillna(0)
-            df_graph = pd.merge(df_graph, backlog, left_on='Date - Création (Europe/Paris)', right_on='Date - Création (Europe/Paris)', how='outer').fillna(0)
+            # Vérifier et fusionner les données pour le graphique sur la colonne Date
+            if not ouvertures.empty:
+                ouvertures['Date'] = pd.to_datetime(ouvertures['Date - Création (Europe/Paris)'], errors='coerce').dt.date
+            if not clotures.empty:
+                clotures['Date'] = pd.to_datetime(clotures['Date - Clôture (Europe/Paris)'], errors='coerce').dt.date
+            if not backlog.empty:
+                backlog['Date'] = pd.to_datetime(backlog['Date - Création (Europe/Paris)'], errors='coerce').dt.date
 
-            # Créer la colonne Date pour le graphique
-            df_graph['Date'] = df_graph['Date - Création (Europe/Paris)'].combine_first(df_graph['Date - Clôture (Europe/Paris)'])
-            
-            # Remplacer les dates invalides ou égales à 1970-01-01
-            df_graph['Date'] = df_graph['Date'].apply(
-                lambda x: x if pd.notna(x) and x != pd.Timestamp(0) else pd.NaT
-            )
-            
-            # Supprimer les lignes avec des dates invalides
-            df_graph = df_graph.dropna(subset=['Date'])
-            df_graph = df_graph[df_graph['Date'] != 0 ]
-            
+            # Fusion des DataFrames en utilisant la colonne 'Date'
+            df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
+            df_graph = pd.merge(df_graph, backlog[['Date', 'Backlog']], on='Date', how='outer').fillna(0)
+
             # Afficher les données du graphique pour vérifier
             st.subheader("📊 Données pour le graphique")
             st.write(df_graph)
@@ -153,6 +149,11 @@ if uploaded_file is not None:
 
         else:
             st.error("❌ Les colonnes nécessaires ne sont pas toutes présentes dans le fichier CSV.")
+    
+    except Exception as e:
+        st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
+        st.text(traceback.format_exc())
+
     
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
