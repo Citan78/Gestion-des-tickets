@@ -31,9 +31,19 @@ if uploaded_file is not None:
         if all(col in df.columns for col in selected_columns):
             df = df[selected_columns]
             
-            # Convertir les colonnes de date en datetime
+            # Convert the date columns to datetime, ensuring all entries are converted
             df['Date - Création (Europe/Paris)'] = pd.to_datetime(df['Date - Création (Europe/Paris)'], errors='coerce')
             df['Date - Clôture (Europe/Paris)'] = pd.to_datetime(df['Date - Clôture (Europe/Paris)'], errors='coerce')
+
+            # Ensure that date_debut and date_fin are also datetime objects
+            date_debut = pd.to_datetime(date_debut)
+            date_fin = pd.to_datetime(date_fin)
+
+# Apply filters only if the dates are valid datetime objects
+if date_debut and date_fin:
+    df = df[(df['Date - Création (Europe/Paris)'] >= date_debut) & 
+            (df['Date - Création (Europe/Paris)'] <= date_fin)]
+
             
             # Section pour les données
             st.sidebar.header("Filtres")
