@@ -161,6 +161,17 @@ if uploaded_file is not None:
             # Ajouter une colonne pourcentage
             tableau_priorite_sla['Pourcentage (%)'] = (tableau_priorite_sla['Nombre de tickets'] / total_tickets * 100).round(2)
             
+            # Créer une ligne pour le total
+            total_row = pd.DataFrame({
+                'Priorité': ['Total'],
+                'SLA - Clôture - Statut': [''],
+                'Nombre de tickets': [total_tickets],
+                'Pourcentage (%)': [100.00]  # La ligne totale a toujours 100%
+            })
+            
+            # Ajouter la ligne des totaux au tableau
+            tableau_priorite_sla = tableau_priorite_sla.append(total_row, ignore_index=True)
+            
             # Afficher le tableau des priorités/SLA avec les pourcentages
             st.subheader("📊 Tableau Priorités/SLA")
             st.write(tableau_priorite_sla)
