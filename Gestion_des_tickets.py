@@ -153,6 +153,7 @@ if uploaded_file is not None:
             st.plotly_chart(fig)
 
             # Calculer les métriques pour le tableau Priorités/SLA
+            # Calculer les métriques pour le tableau Priorités/SLA
             tableau_priorite_sla = df.groupby(['Priorité', 'SLA - Clôture - Statut']).size().reset_index(name='Nombre de tickets')
             
             # Calculer le total des tickets pour les pourcentages
@@ -161,16 +162,27 @@ if uploaded_file is not None:
             # Ajouter une colonne pourcentage
             tableau_priorite_sla['Pourcentage (%)'] = (tableau_priorite_sla['Nombre de tickets'] / total_tickets * 100).round(2)
             
-            # Créer une ligne pour le total
-            total_row = pd.DataFrame({
-                'Priorité': ['Total'],
+            # Créer les lignes pour les totaux spécifiques
+            total_respectee = tableau_priorite_sla[tableau_priorite_sla['SLA - Clôture - Statut'] == 'Respecté']['Nombre de tickets'].sum()
+            total_non_respectee = tableau_priorite_sla[tableau_priorite_sla['SLA - Clôture - Statut'] == 'Non Respecté']['Nombre de tickets'].sum()
+            
+            total_respectee_row = pd.DataFrame({
+                'Priorité': ['Total Respecté'],
                 'SLA - Clôture - Statut': [''],
-                'Nombre de tickets': [total_tickets],
-                'Pourcentage (%)': [100.00]  # La ligne totale a toujours 100%
+                'Nombre de tickets': [total_respectee],
+                'Pourcentage (%)': [(total_respectee / total_tickets * 100).round(2)]
             })
             
-            # Ajouter la ligne des totaux au tableau en utilisant pd.concat
-            tableau_priorite_sla = pd.concat([tableau_priorite_sla, total_row], ignore_index=True)
+            total_non_respectee_row = pd.DataFrame({
+                'Priorité': ['Total Non Respecté'],
+                'SLA - Clôture - Statut': [''],
+                'Nombre de tickets': [total_non_respectee],
+                'Pourcentage (%)': [(total_non_respectee / total_tickets * 100).round(2)]
+            })
+            
+            # Ajouter les lignes des totaux au tableau en utilisant pd.concat
+            tableau_priorite_sla = pd.concat([tableau_priorite_sla, total_respectee_row, total_non_respectee_row], ignore_index=True)
+            
             
             # Afficher le tableau des priorités/SLA avec les pourcentages
             st.subheader("📊 Tableau Priorités/SLA")
