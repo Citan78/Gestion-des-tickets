@@ -112,12 +112,6 @@ if uploaded_file is not None:
             clotures['Date'] = clotures['Date'].dt.date
             backlog['Date'] = backlog['Date'].dt.date
 
-            # Afficher les données intermédiaires
-            st.subheader("📊 Données intermédiaires")
-            st.write(ouvertures)
-            st.write(clotures)
-            st.write(backlog)
-
             # Fusion des DataFrames en utilisant la colonne 'Date'
             df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
             df_graph = pd.merge(df_graph, backlog[['Date', 'Backlog']], on='Date', how='outer').fillna(0)
