@@ -79,14 +79,17 @@ if uploaded_file is not None:
             ouvertures = df[df['Date - Création (Europe/Paris)'].between(date_debut, date_fin)]
             ouvertures = ouvertures.groupby(ouvertures['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Ouvertures')
             ouvertures.rename(columns={'Date - Création (Europe/Paris)': 'Date'}, inplace=True)
+            ouvertures['Date'] = pd.to_datetime(ouvertures['Date'])  # Assurez-vous que la colonne Date est en datetime
             
             clotures = df[df['Date - Clôture (Europe/Paris)'].between(date_debut, date_fin)]
             clotures = clotures.groupby(clotures['Date - Clôture (Europe/Paris)'].dt.date).size().reset_index(name='Clotures')
             clotures.rename(columns={'Date - Clôture (Europe/Paris)': 'Date'}, inplace=True)
+            clotures['Date'] = pd.to_datetime(clotures['Date'])  # Assurez-vous que la colonne Date est en datetime
 
             # Calcul du backlog
             dates = pd.date_range(start=date_debut, end=date_fin)
             backlog = pd.DataFrame(dates, columns=['Date'])
+            backlog['Date'] = pd.to_datetime(backlog['Date'])  # Assurez-vous que la colonne Date est en datetime
 
             backlog['Ouvertures'] = backlog['Date'].apply(
                 lambda x: len(df[(df['Date - Création (Europe/Paris)'] <= x) & (df['Date - Clôture (Europe/Paris)'].isna() | (df['Date - Clôture (Europe/Paris)'] > x))])
