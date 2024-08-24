@@ -100,11 +100,16 @@ if uploaded_file is not None:
             
             backlog['Backlog'] = backlog['Ouvertures'] - backlog['Clotures']
             backlog = backlog.fillna(0)
-
+            
             # Convertir les dates en format YYYY-MM-DD
             ouvertures['Date'] = ouvertures['Date'].dt.date
             clotures['Date'] = clotures['Date'].dt.date
             backlog['Date'] = backlog['Date'].dt.date
+
+            # S'assurer que toutes les valeurs sont positives
+            backlog['Backlog'] = backlog['Backlog'].abs()
+            backlog['Ouvertures'] = backlog['Ouvertures'].abs()
+            backlog['Clotures'] = backlog['Clotures'].abs()
 
             # Afficher les données intermédiaires
             st.subheader("📊 Données intermédiaires")
@@ -170,4 +175,6 @@ if uploaded_file is not None:
     
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
+        st.text(traceback.format_exc())
+
         st.text(traceback.format_exc())
