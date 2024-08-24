@@ -154,20 +154,12 @@ if uploaded_file is not None:
 
             # Calculer les métriques pour le tableau Priorités/SLA
             tableau_priorite_sla = df.groupby(['Priorité', 'SLA - Clôture - Statut']).size().reset_index(name='Nombre de tickets')
-
+            
             # Calculer le total des tickets pour les pourcentages
             total_tickets = tableau_priorite_sla['Nombre de tickets'].sum()
             
             # Ajouter une colonne pourcentage
             tableau_priorite_sla['Pourcentage (%)'] = (tableau_priorite_sla['Nombre de tickets'] / total_tickets * 100).round(2)
-            
-            # Calculer le pourcentage total pour chaque priorité
-            total_priorite = tableau_priorite_sla.groupby('Priorité')['Nombre de tickets'].transform('sum')
-            tableau_priorite_sla['Pourcentage Priorité (%)'] = (tableau_priorite_sla['Nombre de tickets'] / total_priorite * 100).round(2)
-            
-            # Calculer le pourcentage total pour chaque statut SLA
-            total_sla_statut = tableau_priorite_sla.groupby('SLA - Clôture - Statut')['Nombre de tickets'].transform('sum')
-            tableau_priorite_sla['Pourcentage SLA (%)'] = (tableau_priorite_sla['Nombre de tickets'] / total_sla_statut * 100).round(2)
             
             # Afficher le tableau des priorités/SLA avec les pourcentages
             st.subheader("📊 Tableau Priorités/SLA")
