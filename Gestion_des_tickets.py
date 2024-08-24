@@ -82,26 +82,19 @@ if uploaded_file is not None:
             clotures = df[df['Date - Clôture (Europe/Paris)'].between(date_debut, date_fin)]
             clotures = clotures.groupby(clotures['Date - Clôture (Europe/Paris)'].dt.date).size().reset_index(name='Clotures')
 
-            # Conditions de filtrage pour le backlog
-            condition1 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
-                         ((df['Date - Clôture (Europe/Paris)'] > date_fin) | df['Date - Clôture (Europe/Paris)'].isna())
+            # Calcul du backlog
+            dates = pd.date_range(start=date_debut, end=date_fin)
+            backlog = pd.DataFrame(dates, columns=['Date'])
+
+            backlog['Ouvertures'] = backlog['Date'].apply(
+                lambda x: len(df[(df['Date - Création (Europe/Paris)'] <= x) & (df['Date - Clôture (Europe/Paris)'].isna() | (df['Date - Clôture (Europe/Paris)'] > x))])
+            )
+            backlog['Clotures'] = backlog['Date'].apply(
+                lambda x: len(df[(df['Date - Clôture (Europe/Paris)'] <= x)])
+            )
             
-            condition2 = (df['Date - Création (Europe/Paris)'] <= date_fin) & \
-                         df['Date - Clôture (Europe/Paris)'].isna()
-
-            backlog = df[condition1 | condition2]
-
-            # Compter les tickets de backlog par date de création
-            backlog = backlog.groupby(backlog['Date - Création (Europe/Paris)'].dt.date).size().reset_index(name='Backlog')
-            backlog['Date'] = pd.to_datetime(backlog['Date - Création (Europe/Paris)'], errors='coerce').dt.date
-
-            # Vérifier et fusionner les données pour le graphique sur la colonne Date
-            if not ouvertures.empty:
-                ouvertures['Date'] = pd.to_datetime(ouvertures['Date - Création (Europe/Paris)'], errors='coerce').dt.date
-            if not clotures.empty:
-                clotures['Date'] = pd.to_datetime(clotures['Date - Clôture (Europe/Paris)'], errors='coerce').dt.date
-            if not backlog.empty:
-                backlog['Date'] = pd.to_datetime(backlog['Date'], errors='coerce').dt.date
+            backlog['Backlog'] = backlog['Ouvertures'] - backlog['Clotures']
+            backlog = backlog.fillna(0)
 
             # Fusion des DataFrames en utilisant la colonne 'Date'
             df_graph = pd.merge(ouvertures[['Date', 'Ouvertures']], clotures[['Date', 'Clotures']], on='Date', how='outer')
@@ -161,7 +154,4 @@ if uploaded_file is not None:
     
     except Exception as e:
         st.error(f"⚠️ Erreur lors de la lecture du fichier CSV : {e}")
-        st.text(traceback.format_exc())
-
-        
         st.text(traceback.format_exc())
